@@ -1,5 +1,5 @@
-// import { AppDataSource } from "./data-source";
-import 'reflect-metadata'
+import { AppDataSource } from "./data-source";
+import "reflect-metadata";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -12,6 +12,8 @@ import { UserResolvers } from "./UserResolver";
   app.get("/", (_req, res) => {
     res.send("Hello World");
   });
+
+  AppDataSource.initialize();
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
