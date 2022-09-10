@@ -1,5 +1,4 @@
 import { compare, hash } from "bcryptjs";
-import { sign } from "jsonwebtoken";
 import {
   Resolver,
   Query,
@@ -8,8 +7,11 @@ import {
   ObjectType,
   Field,
   Ctx,
+  UseMiddleware,
 } from "type-graphql";
+import { createAccessToken, createRefreshToken } from "./auth";
 import { User } from "./entity/User";
+import { isAuth } from "./isAuth";
 import { MyContext } from "./MyContext";
 
 @ObjectType()
@@ -23,6 +25,12 @@ export class UserResolvers {
   @Query(() => String)
   hello() {
     return "hi!";
+  }
+
+  @Query(() => String)
+  @UseMiddleware(isAuth)
+  bye(@Ctx() { payload }: MyContext) {
+    return `your user id is: ${payload?.userId}`;
   }
 
   @Query(() => [User])
@@ -57,16 +65,12 @@ export class UserResolvers {
     res.cookie(
       // Refresh Token
       "jid",
-      sign({ userId: user.id }, "awerawuionklj", {
-        expiresIn: "7d",
-      }),
+      createRefreshToken(user),
       { httpOnly: true }
     );
 
     return {
-      accessToken: sign({ userId: user.id }, "aasfdasdfkl", {
-        expiresIn: "15m",
-      }),
+      accessToken: createAccessToken(user),
     };
   }
 

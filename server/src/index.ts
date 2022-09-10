@@ -1,10 +1,10 @@
-import { AppDataSource } from "./data-source";
 import "reflect-metadata";
+import 'dotenv/config'
+import { AppDataSource } from "./data-source";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { UserResolvers } from "./UserResolver";
-// import { User } from "./entity/User";
 
 (async () => {
   const app = express();
