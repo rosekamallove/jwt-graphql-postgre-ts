@@ -1,16 +1,45 @@
 import "reflect-metadata";
-import 'dotenv/config'
+import "dotenv/config";
 import { AppDataSource } from "./data-source";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { UserResolvers } from "./UserResolver";
+import cookieParser from "cookie-parser";
+import { User } from "./entity/User";
+import { verify } from "jsonwebtoken";
+import { createAccessToken } from "./auth";
 
 (async () => {
   const app = express();
+  app.use(cookieParser());
 
   app.get("/", (_req, res) => {
     res.send("Hello World");
+  });
+
+  app.post("/refresh_token", async (req, res) => {
+    const token = req.cookies.jid;
+    if (!token) {
+      return res.send({ ok: false, accessToken: "" });
+    }
+
+    let payload: any = null;
+    try {
+      payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
+    } catch (err) {
+      console.log(err);
+      return res.send({ ok: false, accessToken: "" });
+    }
+
+    //token is valid and we can send back an access token
+
+    const user = await User.findOne({ where: { id: payload.userId } });
+    if (!user) {
+      return res.send({ ok: false, accessToken: "" });
+    }
+
+    return res.send({ ok: true, accessToken: createAccessToken(user) });
   });
 
   AppDataSource.initialize();
