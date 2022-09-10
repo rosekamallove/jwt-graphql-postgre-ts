@@ -19,6 +19,7 @@ import { UserResolvers } from "./UserResolver";
     schema: await buildSchema({
       resolvers: [UserResolvers],
     }),
+    context: ({ req, res }) => ({ req, res }),
   });
 
   await apolloServer.start();
